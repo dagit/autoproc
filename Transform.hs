@@ -52,18 +52,24 @@ distributeNot (Cf.Or c1 c2)           = Cf.Or (distributeNot c1)
                                               (distributeNot c2)
 distributeNot c                       = c
 
--- I think this takes care of all the cases, but it's hard to know...
+-- Each call to factor moves the Or one step closer to the top.  This must
+-- be called many times by repeated to reach a normal form.
 -- The goal here is to pull Or to the outside.
+-- We don't worry about not, because that should have been handled by
+-- distributeNot already.
 factor :: Cf.Cond -> Cf.Cond
-factor (Cf.And (Cf.Or c1 c2) c3) = factor (Cf.Or (factor (Cf.And (factor c1) 
-                                                                 (factor c3))) 
-                                                 (factor (Cf.And (factor c2) 
-                                                                 (factor c3))))
-factor (Cf.And c1 (Cf.Or c2 c3)) = factor (Cf.Or (factor (Cf.And (factor c1) 
-                                                                 (factor c2))) 
-                                                 (factor (Cf.And (factor c1) 
-                                                                 (factor c3))))
+factor (Cf.And (Cf.Or c1 c2) c3) = (Cf.Or (Cf.And (factor c1) (factor c3))
+                                          (Cf.And (factor c2) (factor c3)))
+factor (Cf.And c1 (Cf.Or c2 c3)) = (Cf.Or (Cf.And (factor c1) (factor c2))
+                                          (Cf.And (factor c1) (factor c3)))
+factor (Cf.Or  c1 c2)            = (Cf.Or  (factor c1) (factor c2))
+factor (Cf.And c1 c2)            = (Cf.And (factor c1) (factor c2))
 factor c = c
+
+repeated :: (Cf.Cond -> Cf.Cond) -> Cf.Cond -> Cf.Cond
+repeated t c = loop c
+         where loop c' = if c' == (t c') then c'
+                         else repeated t (t c')
 
 -- Procmail does not have a notion of Or, so we must put the
 -- conditions at the same level and repeat the action.  This way, when
@@ -79,7 +85,10 @@ reduceOr x = [x]
 -- The result is a list of CExp, none of which have an Or in their conditions
 -- and not is only used on individual conditions
 simplify :: Cf.CExp -> [Cf.CExp]
-simplify (Cf.CExp fs c a) = reduceOr (Cf.CExp fs (factor (distributeNot c)) a)
+simplify (Cf.CExp fs c a) = reduceOr (Cf.CExp fs c'' a)
+         where
+         c'  = repeated distributeNot c
+         c'' = repeated factor c'
 
 -- This function assumses a simplified CExp, hence the first pattern match.
 transform :: Cf.CExp -> Pm.PExp

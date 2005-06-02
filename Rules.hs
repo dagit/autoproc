@@ -206,3 +206,37 @@ rules' = sarah' ++ nwn' ++ mom' ++ dad' ++ rogan' ++ lkm' ++ cvsupdates' ++
          darcsDevel' ++  sbclDevel' ++ ogi' ++ clispDevel' ++ csGradTalk' ++
          debian' ++ csmaillist' ++ momentum'
 --  --End of Rules
+
+orTest = when (subject "1" .||. 
+               subject "2" .&&. 
+               subject "3" .&&. 
+               subject "4" .&&. 
+               subject "5" .&&. 
+               subject "6" .&&. 
+               subject "7" .&&. 
+               subject "8" .&&. 
+               subject "9" .&&. 
+               subject "10" .&&. 
+               subject "11" .&&. 
+               subject "12" .&&. 
+               subject "13" .&&. 
+               subject "14" .&&.
+               subject "15")
+         (placeIn (mailbox "orTest"))
+   
+notOrTest = when (Not (subject "1" .||. 
+               subject "2" .&&. 
+               subject "3" .&&. 
+               subject "4" .&&. 
+               subject "5" .&&. 
+               subject "6" .&&. 
+               subject "7" .&&. 
+               subject "8" .&&. 
+               subject "9" .&&. 
+               subject "10" .&&. 
+               subject "11" .&&. 
+               subject "12" .&&. 
+               subject "13" .&&. 
+               subject "14" .&&.
+               subject "15"))
+         (placeIn (mailbox "notOrTest"))

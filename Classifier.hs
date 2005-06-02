@@ -29,7 +29,7 @@ data Cond = And Cond Cond
      | Always
      | CheckMatch String
      | CheckHeader String
-     | CheckBody String deriving Show
+     | CheckBody String deriving (Eq, Show)
 
 data Act = File String
      | Fwd [EmailAddress]
