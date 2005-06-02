@@ -26,7 +26,7 @@ will work for you :)
 
 Edit the file Rules.hs, it should be easy to define rules by looking
 at the examples provided.  Remember that any rules which you want to
-appear in your procmail file must be in the list rules.
+appear in your procmail file must be in the list '''rules'''.
 
 The next step is to compile your program.  You can use the command:
   make autoproc
