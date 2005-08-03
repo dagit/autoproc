@@ -21,10 +21,10 @@ import System
 -- For a full list of what is possible, check the Classifier module.
 
 --Rules start here:
-rules = [spamc, spamcheck, sarah, mom, dad, rogan, lkm, cvsupdates, bugs, 
-         forms3Tech, forms3, euses, darcsUsers, darcsDevel, sbclDevel, 
-         ogi, clispDevel, csGradTalk, classes, nwn, debian, 
-         csmaillist, momentum, fixReplyTo, defaultRule]
+rules = [spamc, spamcheck, sarah, mom, dad, rogan, lkm, cvsupdates, 
+         cdspaper, bugs, forms3Tech, forms3, euses, darcsUsers, 
+         darcsDevel, sbclDevel, ogi, clispDevel, csGradTalk, classes, 
+         nwn, debian, csmaillist, momentum, fixReplyTo, defaultRule]
 
 -- default action
 -- I use this rule to make sure any mail that is not sorted goes into
@@ -49,17 +49,19 @@ lkm = sortByTo_ (Addr "linux-kernel@vger.kernel.org") (mailbox "linux-kernel")
 
 -- This is an example of the general syntax.  The above examples are converted
 -- to an analogous when statment.
-cvsupdates = when (subject "[forms3-tech]" .&&. subject "[cvs]") 
+cvsupdates = when (subject "\\[forms3-tech\\]" .&&. subject "\\[cvs\\]") 
              (placeIn (mailbox "cvsupdates"))
 
-bugs = when (subject "[forms3-tech]" .&&. subject "[jira]") 
+cdspaper = when (subject "\\[CDs Paper Update\\]") (placeIn (mailbox "cdpaper"))
+
+bugs = when (subject "\\[forms3-tech\\]" .&&. subject "\\[jira\\]") 
        (placeIn (mailbox "bugs"))
 
 forms3Tech = simpleSortByTo_ "forms3-tech"
 
 forms3 = simpleSortByTo_ "forms3"
 
-euses = when ((subject "[eusesnewsletter]") .||. 
+euses = when ((subject "\\[eusesnewsletter\\]") .||. 
               (to_ (Addr "eusesosugrads"))  .||. 
               (to_ (Addr "eusesall")))
         (placeIn (mailbox "euses"))
@@ -83,8 +85,8 @@ csGradTalk = simpleSortByTo_ "cs-grad-talk"
 debian     = when (CheckHeader "^X-Loop: debian.*@lists.debian.org") 
              (placeIn (mailbox "debian"))
 
-csmaillist = when (subject "[cs-grads]"   .||. 
-                   subject "[eecs-grads]" .||.
+csmaillist = when (subject "\\[cs-grads\\]"   .||. 
+                   subject "\\[eecs-grads\\]" .||.
                    to_ (Addr "eecs-grads"))
              (placeIn (mailbox "csmaillist"))
 
