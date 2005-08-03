@@ -94,7 +94,7 @@ isSpam = CheckHeader ("^x-spam-status: yes") .||.
          CheckHeader ("^x-spam-flag: yes")
 
 spamLevel :: Int -> Cond
-spamLevel n = CheckHeader ("^x-spam-Level: "++replicate n '*')
+spamLevel n = CheckHeader ("^x-spam-Level: "++(concat (replicate n "\\*")))
 
 --------------------------------------------------------------------------
 -- Match monad is just the identity monad, this makes it so that the user
