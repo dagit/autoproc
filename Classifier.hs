@@ -4,6 +4,8 @@ module Classifier where
 -- syntax for the condition expression language.
 
 import Monad hiding (when)
+import Control.Monad.Writer hiding (when)
+
 -- Some functions in this module get their meaning and values from
 -- Configuration module.  If you want to change a default such as
 -- locking, check the Configuration module.
@@ -36,7 +38,9 @@ data Act = File String
      | Filter String
      | Nest [CExp]  deriving Show
 
-type Rule = Cond -> Act -> CExp
+--type Rule = Cond -> Act -> m CExp
+--type Rule = Cond -> Act -> CExp
+--data RuleM a = RuleM a
 
 ---------------------------------------------------------------------------
 -- Basic functions for manipulating conditions and creating Rules
@@ -57,11 +61,11 @@ from (Addr s) = CheckHeader ("^From.*"++s)
 to   (Addr s) = CheckHeader ("^TO"++s)
 to_  (Addr s) = CheckHeader ("^TO_"++s)
 
-when :: Rule
+when :: Cond -> Act -> Writer [CExp] ()
 when c a = whenWithOptions [lock] c a
 
-whenWithOptions :: [Flag] -> Rule
-whenWithOptions fs c a = CExp fs c a
+whenWithOptions :: [Flag] -> Cond -> Act -> Writer [CExp] ()
+whenWithOptions fs c a = tell [CExp fs c a]
 
 placeIn :: Mailbox -> Act
 placeIn (Mailbox m) = File m
@@ -69,12 +73,14 @@ placeIn (Mailbox m) = File m
 also :: Act -> Act -> Act
 also (Nest as) (Nest bs) = Nest (flagAllButLast Copy (as++bs))
 also (Nest as) b         = Nest (flagAllButLast Copy 
-                                (as++[whenWithOptions [] Always b]))
+                                (as++(execWriter $ 
+                                        whenWithOptions [] Always b)))
 also a         (Nest bs) = Nest (flagAllButLast Copy 
-                                ((whenWithOptions [] Always a):bs))
+                                ((execWriter 
+                                     (whenWithOptions [] Always a))++bs))
 also a         b         = Nest (flagAllButLast Copy 
-                                [(whenWithOptions [] Always a), 
-                                 (whenWithOptions [] Always b)])
+                                ((execWriter $ whenWithOptions [] Always a)++
+                                  (execWriter $ whenWithOptions [] Always b)))
 
 flagAllButLast :: Flag -> [CExp] -> [CExp]
 flagAllButLast f [] = []
@@ -110,11 +116,11 @@ instance Monad Match where
 match :: Match String
 match = return "$MATCH"
 
-whenMatch :: Match Cond -> Match Act -> CExp
+whenMatch :: Match Cond -> Match Act -> Writer [CExp] ()
 whenMatch mc ma = whenMatchWithOptions [lock] mc ma
 
-whenMatchWithOptions :: [Flag] -> Match Cond -> Match Act -> CExp
-whenMatchWithOptions fs (Match c) (Match a) = CExp fs c a
+whenMatchWithOptions :: [Flag] -> Match Cond -> Match Act -> Writer [CExp] ()
+whenMatchWithOptions fs (Match c) (Match a) = tell [CExp fs c a]
 
 placeInUsingMatch :: Match Mailbox -> Match Act
 placeInUsingMatch = liftM placeIn
@@ -132,21 +138,21 @@ alsoUsingMatch = liftM2 also
 
 ---------------------------------------------------------------------------
 -- A few functions to create short hand for sorting
-sortBy :: (a -> Cond) -> a -> Mailbox -> CExp
+sortBy :: (a -> Cond) -> a -> Mailbox -> Writer [CExp] ()
 sortBy f s m = when (f s) (placeIn m)
 
-sortByTo_, sortByTo, sortByFrom :: EmailAddress -> Mailbox -> CExp
+sortByTo_, sortByTo, sortByFrom :: EmailAddress -> Mailbox -> Writer [CExp] ()
 sortByTo_     = sortBy to_
 sortByTo      = sortBy to
 sortByFrom    = sortBy from
 
-sortBySubject :: String -> Mailbox -> CExp
+sortBySubject :: String -> Mailbox -> Writer [CExp] ()
 sortBySubject = sortBy subject
 
 ----------------------------------------------------------------------------
 -- Everything below here depends on the values in the Configuration module
 
-simpleSortByFrom, simpleSortByTo_, simpleSortByTo :: String -> CExp
+simpleSortByFrom, simpleSortByTo_, simpleSortByTo:: String -> Writer [CExp] ()
 simpleSortByFrom s = sortByFrom (Addr s) (mailbox s)
 simpleSortByTo   s = sortByTo   (Addr s) (mailbox s)
 simpleSortByTo_  s = sortByTo_  (Addr s) (mailbox s)
@@ -168,26 +174,27 @@ type Class = (String, [Cond])
 
 type Trigger = (String, Int, Act)
 
-type Classifier = CExp
+type Classifier = Writer [CExp] ()
 
 mkTrigger :: Trigger -> Classifier
 mkTrigger (s, i, a) = when (CheckHeader 
                             ("^"++(mkHeader s)++(replicate i '*')))
                        a
 
-mkClassifiers :: Class -> [Classifier]
+mkClassifiers :: Class -> Writer [CExp] ()
 mkClassifiers (s, cs) = more (length cs) s cs
               where
-              more n s []     = []
-              more n s (x:xs) = when x (Nest (incrementHeader s n)) : 
+              more n s []     = return ()
+              more n s (x:xs) = (when x (Nest (incrementHeader s n))) >>
                                 (more n s xs)
 
 incrementHeader :: String -> Int -> [CExp]
-incrementHeader s n = [whenMatch ((CheckHeader ("^"++mkHeader s)) % 
+incrementHeader s n = concat 
+                [execWriter (whenMatch ((CheckHeader ("^"++mkHeader s)) % 
                                  (replicate n '*'))
-                       updateHeader,
-                      when (Not (CheckHeader ("^"++mkHeader s)))
-                      writeHeader]   
+                       updateHeader),
+                      execWriter (when (Not (CheckHeader ("^"++mkHeader s)))
+                      writeHeader)]   
   where 
   updateHeader = do { m <- match; 
                       return (Filter ("formail -I\""++mkHeader s++m++"*\"")) }
@@ -196,24 +203,24 @@ incrementHeader s n = [whenMatch ((CheckHeader ("^"++mkHeader s)) %
 mkHeader :: String -> String
 mkHeader s = "X-classifier-"++s++": "
 
-classify :: [Class] -> [Trigger] -> [CExp]
-classify cs ts = (cs >>= mkClassifiers) ++ (map mkTrigger ts)
+classify :: [Class] -> [Trigger] -> Writer [CExp] ()
+classify cs ts = mapM_ mkClassifiers cs >> mapM_ mkTrigger ts
 
-classifyBy :: (String, Cond) -> Act -> [CExp]
+classifyBy :: (String, Cond) -> Act -> Writer [CExp] ()
 classifyBy (s, c) a = classify [(s,[c])] [(s, 1, a)]
 
-classifyByAddress::(EmailAddress -> Cond) -> EmailAddress -> Mailbox -> [CExp]
+classifyByAddress::(EmailAddress -> Cond) -> EmailAddress -> Mailbox -> Writer [CExp] ()
 classifyByAddress f e@(Addr s) m = classify [(s, [f e])] [(s, 1, placeIn m)]
 
-classifyByTo_, classifyByTo, classifyByFrom:: EmailAddress -> Mailbox -> [CExp]
+classifyByTo_, classifyByTo, classifyByFrom:: EmailAddress -> Mailbox -> Writer [CExp] ()
 classifyByTo_  = classifyByAddress to_  
 classifyByTo   = classifyByAddress to   
 classifyByFrom = classifyByAddress from 
 
-classifyBySubject :: String -> Mailbox -> [CExp]
+classifyBySubject :: String -> Mailbox -> Writer [CExp] ()
 classifyBySubject s m = classify [(s, [subject s])] [(s, 1, placeIn m)]
 
-simpleClassifyByFrom, simpleClassifyByTo_, simpleClassifyByTo::String -> [CExp]
+simpleClassifyByFrom, simpleClassifyByTo_, simpleClassifyByTo::String -> Writer [CExp] ()
 simpleClassifyByFrom s = classifyByFrom (Addr s) (mailbox s)
 simpleClassifyByTo   s = classifyByTo   (Addr s) (mailbox s)
 simpleClassifyByTo_  s = classifyByTo_  (Addr s) (mailbox s)

@@ -4,6 +4,7 @@ import Procmail (PExp, showLn)
 import Transform (generate)
 import Rules (rules)
 import Configuration
+import Control.Monad.Writer
 
 showVars :: [(String, String)] -> String
 showVars []     = ""
@@ -22,4 +23,5 @@ main = do putStrLn "#.procmailrc"
           putStrLn "#  To fetch the latest version of autoproc with darcs:"
           putStrLn "#    darcs get http://projects.codersbase.com/repos/autoproc"
           putStr   "\n\n"
-          putStrLn (showProcmailrc (generate =<< rules))
+          putStrLn $ showProcmailrc $ concatMap generate $ execWriter rules
+

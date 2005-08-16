@@ -3,6 +3,7 @@ module Rules where
 import Classifier 
 import Transform 
 import Monad hiding (when)
+import Control.Monad.Writer hiding (when)
 import System
 
 -- Any rules that you create need to end up in the rules list.  Other
@@ -21,10 +22,11 @@ import System
 -- For a full list of what is possible, check the Classifier module.
 
 --Rules start here:
-rules = [spamc, spamcheck, sarah, mom, dad, rogan, lkm, cvsupdates, 
-         cdspaper, bugs, forms3Tech, forms3, euses, darcsUsers, 
-         darcsDevel, sbclDevel, ogi, clispDevel, csGradTalk, classes, 
-         nwn, debian, csmaillist, momentum, fixReplyTo, defaultRule]
+rules = do spamc; spamcheck; sarah; mom; dad; rogan; lkm; cvsupdates;
+           cdspaper; bugs; forms3Tech; forms3; euses; darcsUsers;
+           darcsDevel; sbclDevel; ogi; clispDevel; csGradTalk;
+           classes; nwn; debian; csmaillist; momentum; fixReplyTo; defaultRule
+           
 
 -- default action
 -- I use this rule to make sure any mail that is not sorted goes into
@@ -203,10 +205,10 @@ csmaillist' = classifyBy ("csmaillist", (subject "[cs-grads]"   .||.
 
 momentum' = classifyBySubject "momentum!" (mailbox "caughtspam")
 
-rules' = sarah' ++ nwn' ++ mom' ++ dad' ++ rogan' ++ lkm' ++ cvsupdates' ++ 
-         bugs' ++ forms3Tech' ++ forms3' ++ euses' ++ darcsUsers' ++
-         darcsDevel' ++  sbclDevel' ++ ogi' ++ clispDevel' ++ csGradTalk' ++
-         debian' ++ csmaillist' ++ momentum'
+--rules = do sarah'; nwn'; mom'; dad'; rogan'; lkm'; cvsupdates'; 
+--           bugs'; forms3Tech'; forms3'; euses'; darcsUsers';
+--           darcsDevel'; sbclDevel'; ogi'; clispDevel'; csGradTalk';
+--           debian'; csmaillist'; momentum'
 --  --End of Rules
 
 orTest = when (subject "1" .||. 

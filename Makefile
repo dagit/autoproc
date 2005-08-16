@@ -1,4 +1,4 @@
-GHC = ghc -O2
+GHC = ghc
 
 .PHONY : autoproc
 autoproc:
