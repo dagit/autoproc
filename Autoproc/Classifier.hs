@@ -28,6 +28,7 @@ data Cond = And Cond Cond
      | Or Cond Cond
      | Not Cond
      | Always
+     | Never
      | CheckMatch String
      | CheckHeader String
      | CheckBody String deriving (Eq, Show)
@@ -151,8 +152,13 @@ sortBySubject = sortBy subject
 ----------------------------------------------------------------------------
 -- Everything below here depends on the values in the Configuration module
 
-simpleSortByFrom, simpleSortByTo_, simpleSortByTo:: String -> Writer [CExp] ()
+-- | If the email address (the String argument) contains "foo", then place the email into a folder
+-- by the name "foo".  Actually, the name of the mailbox is created by
+-- appending boxPrefix which is defined in the Configuration module.
+simpleSortByFrom :: String -> Writer [CExp] ()
 simpleSortByFrom s = sortByFrom (Addr s) (mailbox s)
+
+simpleSortByTo_, simpleSortByTo:: String -> Writer [CExp] ()
 simpleSortByTo   s = sortByTo   (Addr s) (mailbox s)
 simpleSortByTo_  s = sortByTo_  (Addr s) (mailbox s)
 
@@ -216,10 +222,58 @@ classifyByTo_  = classifyByAddress to_
 classifyByTo   = classifyByAddress to
 classifyByFrom = classifyByAddress from
 
+classifyByFromAddr :: String -> String -> Writer [CExp] ()
+classifyByFromAddr x y = classifyByFrom (Addr x) (mailbox y)
+
 classifyBySubject :: String -> Mailbox -> Writer [CExp] ()
 classifyBySubject s m = classify [(s, [subject s])] [(s, 1, placeIn m)]
+
+simpleClassifyBySubject :: String -> Writer [CExp] ()
+simpleClassifyBySubject x = classifyBySubject x (mailbox x)
 
 simpleClassifyByFrom, simpleClassifyByTo_, simpleClassifyByTo::String -> Writer [CExp] ()
 simpleClassifyByFrom s = classifyByFrom (Addr s) (mailbox s)
 simpleClassifyByTo   s = classifyByTo   (Addr s) (mailbox s)
 simpleClassifyByTo_  s = classifyByTo_  (Addr s) (mailbox s)
+
+
+defaultRule :: String -> Writer [CExp] ()
+defaultRule str = when Always $ File str
+
+-- | If the subject line contains a certain string, send it to a certain mailbox.
+subjectToMbox :: String -> String -> Writer [CExp] ()
+subjectToMbox substr mbox = sortBySubject substr $ mailbox mbox
+
+-- | As with 'subjectToMbox', except by email address.
+addressToMbox :: String -> String -> Writer [CExp] ()
+addressToMbox addr mbox = sortByFrom (Addr addr) (mailbox mbox)
+
+-- | 'addressToMbox' is fine, but may not work well for mailing lists.
+toAddressToMbox :: String -> String -> Writer [CExp] ()
+toAddressToMbox addr mbox = sortByTo_ (Addr addr) (mailbox mbox)
+
+{- | A very general filtering statement. This is intended for specialization.
+The idea is to take a logical operator and fold it over a list of strings;
+if the result is @True@, then the email gets dropped into a specified mailbox.
+So if you wanted to insist that only an email which has strings x, y, and z in
+the subject-line could appear in the xyz mailbox, you'd use '.&&.' as the logical operator,
+"xyz" as the mbox", [x, y, z] as the list, and a seed value of True. (You also need the
+'subject' operator, which will map over the list and turn it into properly typed
+stuff.) -}
+stuffToMbox :: Cond -> (a1 -> a) -> (a -> Cond -> Cond) -> String -> [a1] -> Writer [CExp] ()
+stuffToMbox seed header operator mbox items = when (foldr (operator) seed $ map header items)
+                     (insertMbox mbox)
+
+-- | If all the strings appear in the subject line, deposit the email in the specified mailbox
+subjectsToMbox :: [String] -> String -> Writer [CExp] ()
+subjectsToMbox x y = stuffToMbox Always subject (.&&.) y x
+
+-- | If any of the strings appear in the subject line, send it to the mbox
+-- This is currently a bit of a null-op.
+anySubjectsToMbox :: [String] -> String -> Writer [CExp] ()
+anySubjectsToMbox x y = stuffToMbox Never subject (.||.) y x
+
+-- subjectsNotToMbox = stuffToMbox Never subject ((.||.) .) ""
+
+insertMbox :: String -> Act
+insertMbox = placeIn . mailbox
