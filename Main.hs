@@ -16,6 +16,7 @@ showProcmailrc ps = showVars (variables) ++ "\n\n" ++
                     "############################\n\n" ++
                     (ps >>= showLn)
 
+main :: IO ()
 main = do putStrLn "#.procmailrc"
           putStrLn "#  Automatically generated procmail recipes by Autoproc."
           putStrLn "#  To find out more about Autoproc visit:"
