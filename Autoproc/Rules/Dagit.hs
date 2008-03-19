@@ -9,14 +9,23 @@ import Control.Monad.Writer hiding (when)
  examples.
 
  A rule is something of the form:
- when condition action
- Examples of condition might include, @(from (Addr "foo@bar"))@,
- @(subject "Hi again")@.  And example actions are things like:
- @(insertMbox "steve")@, @(forward [Addr "friend@yahoo.com"])@.
 
- I have created some "aliases" for commonly used constructions
+> when condition action
+
+Examples of condition might include:
+
+> (from (Addr "foo@bar"))
+> (subject "Hi again")
+
+And example actions are things like:
+
+> (insertMbox "steve")@, @(forward [Addr "friend@yahoo.com"])
+
+ I have created some aliases for commonly used constructions
  For example, @simpleSortByFrom "joe"@, is equivalent to:
- @when (from (Addr "joe")) (insertMbox "joe")@
+
+> when (from (Addr "joe")) (insertMbox "joe")
+
  For a full list of what is possible, check the "Autoproc.Classifier" module. -}
 --Rules start here:
 dagitRules :: Writer [CExp] ()
