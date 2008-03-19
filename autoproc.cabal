@@ -21,7 +21,7 @@ data-files:          README
 
 Library
         exposed-modules:     Autoproc.Classifier, Autoproc.Configuration,
-                             Autoproc.Procmail, Autoproc.Rules, Autoproc.Transform
+                             Autoproc.Procmail, Autoproc.Rules.Dagit, Autoproc.Transform
 
         build-depends:       base, mtl
 
