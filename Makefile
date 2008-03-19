@@ -2,7 +2,7 @@ GHC = ghc
 
 .PHONY : autoproc
 autoproc:
-	$(GHC) -o autoproc autoproc.hs --make
+	$(GHC) -o autoproc Main.hs --make
 
 clean:
 	rm -rf *.o
