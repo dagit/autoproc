@@ -20,7 +20,7 @@ tested-with:         GHC==6.8.2
 data-files:          README
 
 Library
-        exposed-modules:     Autoproc.Classifier, Autoproc.Configuration,
+        exposed-modules:     Autoproc.Classifier, Autoproc.Configuration, Autoproc.Run,
                              Autoproc.Procmail, Autoproc.Rules.Dagit, Autoproc.Transform
 
         build-depends:       base, mtl
