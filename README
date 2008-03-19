@@ -1,14 +1,14 @@
-= Autoproc = 
+= Autoproc =
 
 Autoproc is a utility/language for email filtering.  Autoproc makes it
 easy to define filtering rules.  The rules define a Haskell program,
-that when executed generates a valid procmail recipes file.  This file
-can then be used with procmail to sort and filter your email before
+that when executed generates a valid Procmail recipes file.  This file
+can then be used with Procmail to sort and filter your email before
 you see it.
 
-You will need to have ghc or hugs, procmail and formail installed.
+You will need to have GHC or Hugs, Procmail and formail installed.
 
-== Installation == 
+== Installation ==
 
 At this time the only way to get a copy of Autoproc is using darcs.
 To get a copy, use
@@ -26,21 +26,21 @@ will work for you :)
 
 Edit the file Rules.hs, it should be easy to define rules by looking
 at the examples provided.  Remember that any rules which you want to
-appear in your procmail file must be in the list '''rules'''.
+appear in your Procmail file must be in the list '''rules'''.
 
 The next step is to compile your program.  You can use the command:
   make autoproc
 
-To run autoproc and save your rules to the file recipes use the
+To run the autoproc binary and save your rules to the file recipes use the
 following command:
 
-  autoproc > recipes
+  $ autoproc > recipes
 
-If you are familiar with procmail you may want to examine the file to
+If you are familiar with Procmail you may want to examine the file to
 see that everything was generated correctly.  Once you are confident
 that you would like to use this file, you can simply move it to
 $HOME/.procmailrc Depending on your system you may need to do
-additional configuration to get procmail itself running.  Usually this
+additional configuration to get Procmail itself running.  Usually this
 is done with a .forward file, or on some systems having a .procmailrc
 is enough.
 
