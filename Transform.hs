@@ -5,7 +5,8 @@ module Transform ( generate ) where
 
 import qualified Procmail as Pm
 import qualified Classifier as Cf
-import List ( nub )
+
+import Data.List (nub)
 
 -- This raises the question, Why not use RecipeFlag for CExp?  The
 -- reason is that we are trying to separate the final representation
@@ -25,7 +26,7 @@ transformCond :: Cf.Cond -> [Pm.Condition]
 transformCond (Cf.Or c1 c2)      = error "transformCond cannot handle Or."
 transformCond (Cf.And c1 c2)     = transformCond c1 ++ transformCond c2
 transformCond (Cf.Not c)         = [Pm.Condition Pm.Invert c']
-       where [Pm.Condition f c'] = transformCond c                            
+       where [Pm.Condition f c'] = transformCond c
 transformCond Cf.Always          = [Pm.Condition Pm.Normal []]
 transformCond (Cf.CheckHeader s) = [Pm.Condition Pm.Normal s]
 transformCond (Cf.CheckBody s)   = [Pm.Condition Pm.Normal s]
@@ -41,9 +42,9 @@ transformAct (Cf.Nest as)  = Pm.Nest (map transform as)
 -- This pushes "not" as far down as possible.
 -- This helps us to reach a "normal" form
 distributeNot :: Cf.Cond -> Cf.Cond
-distributeNot (Cf.Not (Cf.And c1 c2)) = Cf.Or (distributeNot (Cf.Not c1)) 
+distributeNot (Cf.Not (Cf.And c1 c2)) = Cf.Or (distributeNot (Cf.Not c1))
                                               (distributeNot (Cf.Not c2))
-distributeNot (Cf.Not (Cf.Or c1 c2))  = Cf.And (distributeNot (Cf.Not c1)) 
+distributeNot (Cf.Not (Cf.Or c1 c2))  = Cf.And (distributeNot (Cf.Not c1))
                                                (distributeNot (Cf.Not c2))
 distributeNot (Cf.Not (Cf.Not c))     = distributeNot c
 distributeNot (Cf.And c1 c2)          = Cf.And (distributeNot c1)
@@ -105,7 +106,7 @@ transform (Cf.CExp fs c a)           = Pm.PExp (nub fs') (transformCond c)
     newFlags = (if isFilter a then [Pm.Wait, Pm.PipeAsFilter] else [])++
                (map transformFlag fs)
 
-isFilter :: Cf.Act -> Bool    
+isFilter :: Cf.Act -> Bool
 isFilter (Cf.Filter _) = True
 isFilter  _            = False
 

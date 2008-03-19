@@ -6,20 +6,20 @@ module Procmail where
 -- The goal of this module is to capture the abstract syntax of procmail
 -- and to output to the procmail syntax.
 
-import List ( sort )
+import Data.List (sort)
 
 data PExp = PExp [RecipeFlag] [Condition] Action
 
-data RecipeFlag = CheckHeader | CheckBody 
+data RecipeFlag = CheckHeader | CheckBody
      | CaseSensitive | Chain
-     | ElseIf | PipeAsFilter | Copy 
+     | ElseIf | PipeAsFilter | Copy
      | Wait | IgnoreErrors | RawWrite | NeedLock Bool deriving (Eq, Ord)
 
 data Condition = Condition ConditionFlag String
-data ConditionFlag = Normal | Invert | Eval | UseExitCode 
+data ConditionFlag = Normal | Invert | Eval | UseExitCode
      | LessThan | GreaterThan | Var String
-     
-{- 
+
+{-
 
  There are two types of actions:
 
@@ -43,7 +43,7 @@ showLn = (++ "\n") . show
 
 instance Show PExp where
          show (PExp fs cs a) = ":0"++showFlags fs++"\n"
-                               ++(cs >>= (\x -> if show x == "" then "" 
+                               ++(cs >>= (\x -> if show x == "" then ""
                                                 else showLn x))
                                ++show a++"\n"
               where

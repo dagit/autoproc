@@ -3,7 +3,7 @@ module Classifier where
 -- The purpose of this module is to define the abstract and concrete
 -- syntax for the condition expression language.
 
-import Monad hiding (when)
+import Control.Monad hiding (when)
 import Control.Monad.Writer hiding (when)
 
 -- Some functions in this module get their meaning and values from
@@ -72,13 +72,13 @@ placeIn (Mailbox m) = File m
 
 also :: Act -> Act -> Act
 also (Nest as) (Nest bs) = Nest (flagAllButLast Copy (as++bs))
-also (Nest as) b         = Nest (flagAllButLast Copy 
-                                (as++(execWriter $ 
+also (Nest as) b         = Nest (flagAllButLast Copy
+                                (as++(execWriter $
                                         whenWithOptions [] Always b)))
-also a         (Nest bs) = Nest (flagAllButLast Copy 
-                                ((execWriter 
+also a         (Nest bs) = Nest (flagAllButLast Copy
+                                ((execWriter
                                      (whenWithOptions [] Always a))++bs))
-also a         b         = Nest (flagAllButLast Copy 
+also a         b         = Nest (flagAllButLast Copy
                                 ((execWriter $ whenWithOptions [] Always a)++
                                   (execWriter $ whenWithOptions [] Always b)))
 
@@ -177,7 +177,7 @@ type Trigger = (String, Int, Act)
 type Classifier = Writer [CExp] ()
 
 mkTrigger :: Trigger -> Classifier
-mkTrigger (s, i, a) = when (CheckHeader 
+mkTrigger (s, i, a) = when (CheckHeader
                             ("^"++(mkHeader s)++(replicate i '*')))
                        a
 
@@ -189,14 +189,14 @@ mkClassifiers (s, cs) = more (length cs) s cs
                                 (more n s xs)
 
 incrementHeader :: String -> Int -> [CExp]
-incrementHeader s n = concat 
-                [execWriter (whenMatch ((CheckHeader ("^"++mkHeader s)) % 
+incrementHeader s n = concat
+                [execWriter (whenMatch ((CheckHeader ("^"++mkHeader s)) %
                                  (replicate n '*'))
                        updateHeader),
                       execWriter (when (Not (CheckHeader ("^"++mkHeader s)))
-                      writeHeader)]   
-  where 
-  updateHeader = do { m <- match; 
+                      writeHeader)]
+  where
+  updateHeader = do { m <- match;
                       return (Filter ("formail -I\""++mkHeader s++m++"*\"")) }
   writeHeader  = Filter ("formail -I\""++mkHeader s++"*\"")
 
@@ -213,9 +213,9 @@ classifyByAddress::(EmailAddress -> Cond) -> EmailAddress -> Mailbox -> Writer [
 classifyByAddress f e@(Addr s) m = classify [(s, [f e])] [(s, 1, placeIn m)]
 
 classifyByTo_, classifyByTo, classifyByFrom:: EmailAddress -> Mailbox -> Writer [CExp] ()
-classifyByTo_  = classifyByAddress to_  
-classifyByTo   = classifyByAddress to   
-classifyByFrom = classifyByAddress from 
+classifyByTo_  = classifyByAddress to_
+classifyByTo   = classifyByAddress to
+classifyByFrom = classifyByAddress from
 
 classifyBySubject :: String -> Mailbox -> Writer [CExp] ()
 classifyBySubject s m = classify [(s, [subject s])] [(s, 1, placeIn m)]
