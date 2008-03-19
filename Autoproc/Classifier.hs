@@ -236,7 +236,6 @@ simpleClassifyByFrom s = classifyByFrom (Addr s) (mailbox s)
 simpleClassifyByTo   s = classifyByTo   (Addr s) (mailbox s)
 simpleClassifyByTo_  s = classifyByTo_  (Addr s) (mailbox s)
 
-
 defaultRule :: String -> Writer [CExp] ()
 defaultRule str = when Always $ File str
 
@@ -252,14 +251,16 @@ addressToMbox addr mbox = sortByFrom (Addr addr) (mailbox mbox)
 toAddressToMbox :: String -> String -> Writer [CExp] ()
 toAddressToMbox addr mbox = sortByTo_ (Addr addr) (mailbox mbox)
 
-{- | A very general filtering statement. This is intended for specialization.
-The idea is to take a logical operator and fold it over a list of strings;
-if the result is @True@, then the email gets dropped into a specified mailbox.
-So if you wanted to insist that only an email which has strings x, y, and z in
-the subject-line could appear in the xyz mailbox, you'd use '.&&.' as the logical operator,
-"xyz" as the mbox", [x, y, z] as the list, and a seed value of True. (You also need the
-'subject' operator, which will map over the list and turn it into properly typed
-stuff.) -}
+{- | 'stuffToMbox' is a very general filtering statement, which is intended for specialization
+   by other functions.
+
+   The idea is to take a logical operator and fold it over a list of strings.
+   If the result is @True@, then the email gets dropped into a specified mailbox.
+   So if you wanted to insist that only an email which has strings @x@, @y@, and @z@ in
+   the subject-line could appear in the xyz mailbox, you'd use .&&. as the logical operator,
+   "xyz" as the @mbox@ argument, [x, y, z] as the list, and a seed value of True. You also need the
+   'subject' operator, which will map over the list and turn it into properly typed
+   stuff. -}
 stuffToMbox :: Cond -> (a1 -> a) -> (a -> Cond -> Cond) -> String -> [a1] -> Writer [CExp] ()
 stuffToMbox seed header operator mbox items = when (foldr (operator) seed $ map header items)
                      (insertMbox mbox)
@@ -269,7 +270,7 @@ subjectsToMbox :: [String] -> String -> Writer [CExp] ()
 subjectsToMbox x y = stuffToMbox Always subject (.&&.) y x
 
 -- | If any of the strings appear in the subject line, send it to the mbox
--- This is currently a bit of a null-op.
+-- This is currently a bit of a null-op, and I'm not sure it works.
 anySubjectsToMbox :: [String] -> String -> Writer [CExp] ()
 anySubjectsToMbox x y = stuffToMbox Never subject (.||.) y x
 
