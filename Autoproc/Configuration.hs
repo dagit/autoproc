@@ -1,4 +1,4 @@
-module Configuration where
+module Autoproc.Configuration where
 
 -- Anything which is specific to your system should be changed here.
 

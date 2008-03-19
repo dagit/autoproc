@@ -1,4 +1,4 @@
-module Classifier where
+module Autoproc.Classifier where
 
 -- The purpose of this module is to define the abstract and concrete
 -- syntax for the condition expression language.
@@ -8,7 +8,7 @@ import Control.Monad.Writer hiding (when)
 -- Some functions in this module get their meaning and values from
 -- Configuration module.  If you want to change a default such as
 -- locking, check the Configuration module.
-import Configuration
+import Autoproc.Configuration
 
 data EmailAddress = Addr String deriving Show
 

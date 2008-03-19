@@ -1,7 +1,7 @@
-module Rules where
+module Autoproc.Rules where
 
-import Classifier
-import Transform
+import Autoproc.Classifier
+import Autoproc.Transform
 
 import Control.Monad hiding (when)
 import Control.Monad.Writer hiding (when)

@@ -1,4 +1,4 @@
-module Procmail where
+module Autoproc.Procmail where
 -- One thing to keep in mind:
 -- Procmail seems to "just work" by running regular expressions over the
 -- email and doing something.

@@ -1,9 +1,10 @@
 module Main where
 
-import Procmail (PExp, showLn)
-import Transform (generate)
-import Rules (rules)
-import Configuration
+import Autoproc.Procmail (PExp, showLn)
+import Autoproc.Transform (generate)
+import Autoproc.Rules (rules)
+import Autoproc.Configuration
+
 import Control.Monad.Writer
 
 showVars :: [(String, String)] -> String

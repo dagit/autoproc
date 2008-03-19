@@ -1,10 +1,10 @@
-module Transform ( generate ) where
+module Autoproc.Transform (generate) where
 
 -- The purpose of this module is to define the transformations from
 -- condition expression to procmail representation.
 
-import qualified Procmail as Pm
-import qualified Classifier as Cf
+import qualified Autoproc.Procmail as Pm
+import qualified Autoproc.Classifier as Cf
 
 import Data.List (nub)
 
