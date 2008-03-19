@@ -23,10 +23,10 @@ transformFlag Cf.Chain         = Pm.Chain
 transformFlag Cf.CaseSensitive = Pm.CaseSensitive
 
 transformCond :: Cf.Cond -> [Pm.Condition]
-transformCond (Cf.Or c1 c2)      = error "transformCond cannot handle Or."
+transformCond (Cf.Or _ _)      = error "transformCond cannot handle Or."
 transformCond (Cf.And c1 c2)     = transformCond c1 ++ transformCond c2
 transformCond (Cf.Not c)         = [Pm.Condition Pm.Invert c']
-       where [Pm.Condition f c'] = transformCond c
+       where [Pm.Condition _ c'] = transformCond c
 transformCond Cf.Always          = [Pm.Condition Pm.Normal []]
 transformCond (Cf.CheckHeader s) = [Pm.Condition Pm.Normal s]
 transformCond (Cf.CheckBody s)   = [Pm.Condition Pm.Normal s]
@@ -97,12 +97,12 @@ transform (Cf.CExp _  (Cf.Or _ _) _) = error "use simplify."
 transform (Cf.CExp fs c a)           = Pm.PExp (nub fs') (transformCond c)
                                                          (transformAct a)
     where
-    fs'      = (if any then [Pm.CheckHeader,Pm.CheckBody] else
+    fs'      = (if any' then [Pm.CheckHeader,Pm.CheckBody] else
                  if body then [Pm.CheckBody] else
                    if header then [Pm.CheckHeader] else [])++newFlags
     body     = checksBody c
     header   = checksHeader c
-    any      = checksAny c
+    any'     = checksAny c
     newFlags = (if isFilter a then [Pm.Wait, Pm.PipeAsFilter] else [])++
                (map transformFlag fs)
 

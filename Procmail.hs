@@ -48,7 +48,7 @@ instance Show PExp where
                                ++show a++"\n"
               where
               showFlags [NeedLock b] = show (NeedLock b)
-              showFlags fs         = " "++((show =<<) . sort) fs
+              showFlags hs         = " " ++ ((show =<<) . sort) hs
 
 instance Show RecipeFlag where
          show CheckHeader      = "H"
@@ -65,8 +65,8 @@ instance Show RecipeFlag where
          show (NeedLock False) = ""
 
 instance Show Condition where
-         show (Condition cf []) = ""
-         show (Condition cf s)  = "* "++show cf++s
+         show (Condition _ []) = ""
+         show (Condition cf s)  = "* " ++ show cf ++ s
 
 instance Show ConditionFlag where
          show Normal      = ""

@@ -3,7 +3,6 @@ module Classifier where
 -- The purpose of this module is to define the abstract and concrete
 -- syntax for the condition expression language.
 
-import Control.Monad hiding (when)
 import Control.Monad.Writer hiding (when)
 
 -- Some functions in this module get their meaning and values from
@@ -83,7 +82,7 @@ also a         b         = Nest (flagAllButLast Copy
                                   (execWriter $ whenWithOptions [] Always b)))
 
 flagAllButLast :: Flag -> [CExp] -> [CExp]
-flagAllButLast f [] = []
+flagAllButLast _ [] = []
 flagAllButLast f cs = (map (addFlag f) (init cs))++[removeFlag f (last cs)]
 
 addFlag :: Flag -> CExp -> CExp
@@ -184,9 +183,9 @@ mkTrigger (s, i, a) = when (CheckHeader
 mkClassifiers :: Class -> Writer [CExp] ()
 mkClassifiers (s, cs) = more (length cs) s cs
               where
-              more n s []     = return ()
-              more n s (x:xs) = (when x (Nest (incrementHeader s n))) >>
-                                (more n s xs)
+              more _ _ []     = return ()
+              more n t (x:xs) = (when x $ Nest $ incrementHeader t n) >>
+                                (more n t xs)
 
 incrementHeader :: String -> Int -> [CExp]
 incrementHeader s n = concat

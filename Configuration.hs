@@ -5,9 +5,11 @@ module Configuration where
 boxPrefix :: String
 boxPrefix = "INBOX."
 
+lockDefault :: Bool
 lockDefault = True
 
 -- These variables are used to generate the start of .procmailrc
+variables :: [(String, String)]
 variables = [("SHELL", "/bin/sh"),
              ("PATH", "/usr/local/bin:/usr/bin:$PATH"),
              ("DATE", "`date +%m_%d_%Y`"),
