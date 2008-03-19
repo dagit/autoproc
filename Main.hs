@@ -5,11 +5,8 @@ import Autoproc.Rules.Dagit
 
 import Prelude hiding (catch)
 import System.IO (openFile, IOMode(WriteMode), hClose)
-import System.Info (arch, os)
-import System.Environment (getArgs, getEnv)
 import System.Posix.Process (executeFile, forkProcess, createSession, getProcessStatus)
 import System.Process (runProcess, waitForProcess)
-import Data.Version (showVersion)
 import System.Directory (getAppUserDataDirectory, getModificationTime)
 import Control.Monad.Trans (liftIO, MonadIO)
 import Control.Exception (bracket, catch)
@@ -17,16 +14,11 @@ import Control.Monad (when)
 import System.Exit (ExitCode(..), exitWith)
 import Control.Applicative ((<$>))
 
--- | The entry point into autoproc. Attempts to compile any custom main
--- for autoproc, and if it doesn't find one, just launches the default.
+-- | The entry point into autoproc. Attempts to compile @~/.autoproc/autoproc.hs@
+-- for autoproc, and if it doesn't find one, just compiles the default.
 -- This code and method is totally stolen from XMonad. Thanks guys!
 main :: IO ()
-main = do
-    args <- getArgs
---    home <- getEnv "$HOME"
-    case args of
-      [] ->  autoprocMain $ dagitRules
-      [arg] -> buildLaunch (arg)
+main = catch (buildLaunch) (\_ -> autoprocMain $ dagitRules)
 
 -- | Build "~/.autoproc/autoproc.hs" with GHC, then execute it.  If there are no
 -- errors, this function does not return.  An exception is raised in any of
@@ -38,12 +30,11 @@ main = do
 --      ** type error, syntax error, ..
 --   * Missing autoproc/AutoprocContrib modules due to ghc upgrade
 --
-buildLaunch ::  String -> IO ()
-buildLaunch file = do
+buildLaunch :: IO ()
+buildLaunch = do
     recompile True
     dir  <- getAutoprocDir
-    args <- getArgs
-    executeFile (file) False args Nothing
+    executeFile (dir ++ "/autoproc") False [] Nothing
     return ()
 
 -- | Return the path to @~\/.autoproc@.
@@ -66,7 +57,7 @@ getAutoprocDir = liftIO $ getAppUserDataDirectory "autoproc"
 recompile :: MonadIO m => Bool -> m Bool
 recompile force = liftIO $ do
     dir <- getAutoprocDir
-    let binn = "autoproc-"++arch++"-"++os
+    let binn = "autoproc"
         bin  = dir ++ "/" ++ binn
         base = dir ++ "/" ++ "autoproc"
         err  = base ++ ".errors"
