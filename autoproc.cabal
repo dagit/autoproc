@@ -23,7 +23,7 @@ Library
         exposed-modules:     Autoproc.Classifier, Autoproc.Configuration, Autoproc.Run,
                              Autoproc.Procmail, Autoproc.Rules.Dagit, Autoproc.Transform
 
-        build-depends:       base, mtl
+        build-depends:       base>3, mtl, unix, directory, process
 
         ghc-options:         -Wall -optl-Wl,-s
         ghc-prof-options:    -prof -auto-all
