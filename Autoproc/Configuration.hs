@@ -20,3 +20,8 @@ defaultVariables = [("SHELL", "/bin/sh"),
              ("LOGFILE", "$PMDIR/$DATE.log"),
              ("LOGABSTRACT", "on"),
              ("#VERBOSE", "on")]
+
+showVars :: [(String, String)] -> String
+showVars []     = ""
+showVars (v:vs) = (fst v) ++ " = " ++ (snd v) ++ "\n"
+                  ++ showVars vs

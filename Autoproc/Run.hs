@@ -1,16 +1,11 @@
 module Autoproc.Run where
 
 import Autoproc.Classifier (CExp)
-import Autoproc.Configuration (variables)
+import Autoproc.Configuration (showVars)
 import Autoproc.Procmail (PExp, showLn)
 import Autoproc.Transform (generate)
 
 import Control.Monad.Writer (execWriter, Writer)
-
-showVars :: [(String, String)] -> String
-showVars []     = ""
-showVars (v:vs) = (fst v) ++ " = " ++ (snd v) ++ "\n"
-                  ++ showVars vs
 
 showProcmailrc :: [(String, String)] -> [PExp] -> String
 showProcmailrc vars ps = showVars (vars) ++
@@ -28,6 +23,5 @@ autoprocMessage =  putStr $ unlines ["#.procmailrc",
                            "",
                            ""]
 
-autoprocMain :: Writer [CExp] a -> IO ()
-autoprocMain rules = do autoprocMessage
-                        putStrLn $ showProcmailrc variables $ concatMap generate $ execWriter rules
+autoprocMain :: [(String, String)] -> Writer [CExp] a -> IO ()
+autoprocMain vars rules = autoprocMessage >> (putStrLn . showProcmailrc vars . concatMap generate $ execWriter rules)

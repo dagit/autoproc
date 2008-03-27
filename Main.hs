@@ -1,7 +1,8 @@
 module Main (main) where
 
-import Autoproc.Run
-import Autoproc.Rules.Dagit
+import Autoproc.Configuration (defaultVariables)
+import Autoproc.Run (autoprocMain)
+import Autoproc.Rules.Dagit (dagitRules)
 
 import Prelude hiding (catch)
 import System.IO (openFile, IOMode(WriteMode), hClose)
@@ -18,7 +19,7 @@ import Control.Applicative ((<$>))
 -- for autoproc, and if it doesn't find one, just compiles the default.
 -- This code and method is totally stolen from XMonad. Thanks guys!
 main :: IO ()
-main = catch (buildLaunch) (\_ -> autoprocMain $ dagitRules)
+main = catch (buildLaunch) (\_ -> autoprocMain defaultVariables dagitRules)
 
 -- | Build "~/.autoproc/autoproc.hs" with GHC, then execute it.  If there are no
 -- errors, this function does not return.  An exception is raised in any of
