@@ -12,10 +12,11 @@ showVars []     = ""
 showVars (v:vs) = (fst v) ++ " = " ++ (snd v) ++ "\n"
                   ++ showVars vs
 
-showProcmailrc :: [PExp] -> String
-showProcmailrc ps = showVars (variables) ++ "\n\n" ++
-                    "############################\n\n" ++
-                    (ps >>= showLn)
+showProcmailrc :: [(String, String)] -> [PExp] -> String
+showProcmailrc vars ps = showVars (vars) ++
+                          "\n\n" ++
+                          "############################\n\n" ++
+                          (ps >>= showLn)
 
 autoprocMessage :: IO ()
 autoprocMessage =  putStr $ unlines ["#.procmailrc",
@@ -29,4 +30,4 @@ autoprocMessage =  putStr $ unlines ["#.procmailrc",
 
 autoprocMain :: Writer [CExp] a -> IO ()
 autoprocMain rules = do autoprocMessage
-                        putStrLn $ showProcmailrc $ concatMap generate $ execWriter rules
+                        putStrLn $ showProcmailrc variables $ concatMap generate $ execWriter rules
