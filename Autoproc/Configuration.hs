@@ -19,7 +19,7 @@ defaultVariables = [("SHELL", "/bin/sh"),
              ("DUMMY", "`test -d $PMDIR || mkdir $PMDIR`"),
              ("LOGFILE", "$PMDIR/$DATE.log"),
              ("LOGABSTRACT", "on"),
-             ("#VERBOSE", "on")]
+             ("VERBOSE", "off")]
 
 showVars :: [(String, String)] -> String
 showVars []     = ""
