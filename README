@@ -10,8 +10,7 @@ You will need to have GHC or Hugs, Procmail and formail installed.
 
 == Installation ==
 
-At this time the only way to get a copy of Autoproc is using darcs.
-To get a copy, use
+To get a copy of Autoproc, use
 
   darcs get http://projects.codersbase.com/repos/autoproc
 
@@ -19,17 +18,35 @@ If you don't have darcs do not despair, currently Autoproc is about 5
 files and can be easily downloaded by pointing your web browser at the
 address just given.
 
-== Using Autoproc ==
+You can also visit Hackage, where you should be able to find a tarball of autoproc (or eventually you could install Autoproc through cabal-install).
 
-Edit Configuration.hs to suit your system.  Chances are the defaults
-will work for you :)
+== Customizing Autoproc ==
 
-Edit the file Rules.hs, it should be easy to define rules by looking
-at the examples provided.  Remember that any rules which you want to
-appear in your Procmail file must be in the list '''rules'''.
+Autoproc runs on the XMonad model. If you aren't familiar with XMonad, the idea is that the package is constructed such that it provides a library, and then it compiles a thin executable using that library.
 
-The next step is to compile your program.  You can use the command:
-  make autoproc
+This is fine if the baked in configuration exactly suits your needs, but how do you have a system-wide XMonad which you can configure in a full Haskell style without some sort of Emacs-style interpreter? Well, the thin executable is tasked with looking for a xmonad.hs in a fixed location; if it exists, it gets compiled and the *new* binary gets run. And your personal xmonad.hs can do anything it wants - as all of XMonad's functionality is exposed as a library your xmonad.hs can import and modify at will. So your xmonad.hs boils down to 'main = xmonad $ myCrazyFunkyArgs'.
+
+In Autoproc's case, what you do is create ~/.autoproc/autoproc.hs, and then set things up. (If you don't, Autoproc will use its compiled in configuration, which is surely not what you want.)
+
+While I was testing this Xmonad-style configuration, I created an autoproc.hs that looks like this:
+
+> import Autoproc.Configuration (defaultVariables)
+> import Autoproc.Run
+> import Autoproc.Rules.Dagit
+
+> main ∷ IO ()
+> main =  do print "foo bar"
+>            autoprocMain defaultVariables dagitRules
+
+('defaultVariables' provides the key-values of environmental variables, and 'dagitRules' is all the Procmail filtering rules.)
+
+Now, this is the same environmental variables and configuration rules used by default, but there's nothing stopping me from taking defaultVariables and replacing it with
+
+> myVariables = [("SHELL", "/bin/zsh")]
+
+And I can run arbitrary stuff before and after the rules and variables are compiled down to text - my output will start with "foo bar", as useless a customization as that is...
+
+== Running Autoproc ==
 
 To run the autoproc binary and save your rules to the file recipes use the
 following command:
