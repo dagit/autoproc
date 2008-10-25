@@ -10,7 +10,7 @@ category:            System
 license:             BSD3
 license-file:        LICENSE
 author:              Jason Dagit
-maintainer:          Jason Dagit <dagit@codersbase.com>
+maintainer:          Gwern Branwen <gwern0@gmail.com>
 homepage:            http://code.haskell.org/autoproc
 
 build-type:          Simple
