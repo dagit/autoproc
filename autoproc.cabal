@@ -1,5 +1,5 @@
 name:                autoproc
-version:             0.1
+version:             0.1.1
 synopsis:            EDSL for Procmail scripts
 description:         Autoproc is a utility which allows you to write an email filterer in an Haskell
                      EDSL (embedded domain specific language); autoproc will then compile
@@ -11,7 +11,7 @@ license:             BSD3
 license-file:        LICENSE
 author:              Jason Dagit
 maintainer:          Jason Dagit <dagit@codersbase.com>
-homepage:            http://projects.codersbase.com/repos/autoproc
+homepage:            http://code.haskell.org/autoproc
 
 build-type:          Simple
 Cabal-Version:       >= 1.2
