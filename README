@@ -12,7 +12,7 @@ You will need to have GHC or Hugs, Procmail and formail installed.
 
 To get a copy of Autoproc, use
 
-  darcs get http://projects.codersbase.com/repos/autoproc
+  darcs get http://code.haskell.org/autoproc
 
 If you don't have darcs do not despair, currently Autoproc is about 5
 files and can be easily downloaded by pointing your web browser at the
