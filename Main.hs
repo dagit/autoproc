@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main (main) where
 
 import Autoproc.Configuration (defaultVariables)
@@ -10,7 +11,7 @@ import System.Posix.Process (executeFile, forkProcess, createSession, getProcess
 import System.Process (runProcess, waitForProcess)
 import System.Directory (getAppUserDataDirectory, getModificationTime)
 import Control.Monad.Trans (liftIO, MonadIO)
-import Control.Exception (bracket, catch)
+import Control.Exception (bracket, catch, SomeException)
 import Control.Monad (when)
 import System.Exit (ExitCode(..), exitWith)
 import Control.Applicative ((<$>))
@@ -19,7 +20,7 @@ import Control.Applicative ((<$>))
 -- for autoproc, and if it doesn't find one, just compiles the default.
 -- This code and method is totally stolen from XMonad. Thanks guys!
 main :: IO ()
-main = catch (buildLaunch) (\_ -> autoprocMain defaultVariables dagitRules)
+main = catch (buildLaunch) (\(_::SomeException) -> autoprocMain defaultVariables dagitRules)
 
 -- | Build "~/.autoproc/autoproc.hs" with GHC, then execute it.  If there are no
 -- errors, this function does not return.  An exception is raised in any of
@@ -80,7 +81,7 @@ recompile force = liftIO $ do
             doubleFork $ executeFile "xmessage" True ["-default", "okay", msg] Nothing
         return (status == ExitSuccess)
       else return True
- where getModTime f = catch (Just <$> getModificationTime f) (const $ return Nothing)
+ where getModTime f = catch (Just <$> getModificationTime f) (\(_::SomeException) -> return Nothing)
 
 -- | Double fork and execute an IO action (usually one of the exec family of
 -- functions)
