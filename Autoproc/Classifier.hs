@@ -113,6 +113,13 @@ instance Monad Match where
          return = Match
          (>>=) (Match a) f = (f a)
 
+instance Functor Match where
+      fmap = liftM
+
+instance Applicative Match where
+      pure  = return
+      (<*>) = ap
+
 match :: Match String
 match = return "$MATCH"
 
